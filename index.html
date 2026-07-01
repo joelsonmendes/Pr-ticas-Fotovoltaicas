@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f4b91" />
+  <title>Checklist FV com Google Sheets | SENAI HUB</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#07111f;
+      --card:#0d1d33;
+      --card2:#102844;
+      --line:rgba(255,255,255,.12);
+      --text:#f4f7fb;
+      --muted:#aebbd0;
+      --blue:#164b9b;
+      --orange:#f04a13;
+      --green:#19c37d;
+      --yellow:#ffd166;
+      --danger:#ff5c7a;
+      --shadow:0 18px 45px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(22,75,155,.45), transparent 32%),
+        radial-gradient(circle at 85% 10%, rgba(240,74,19,.28), transparent 28%),
+        linear-gradient(135deg, #050913, var(--bg));
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    .app{
+      width:min(1180px, 94vw);
+      margin:0 auto;
+      padding:24px 0 44px;
+    }
+
+    header{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:18px;
+      align-items:center;
+      margin-bottom:20px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      min-width:0;
+    }
+
+    .brand img{
+      width:min(320px, 52vw);
+      height:auto;
+      object-fit:contain;
+      filter:drop-shadow(0 14px 22px rgba(0,0,0,.32));
+    }
+
+    .titlebox{
+      border-left:3px solid var(--orange);
+      padding-left:16px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(1.35rem, 2.7vw, 2.45rem);
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+
+    .subtitle{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:.98rem;
+    }
+
+    .teacher-panel{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:12px;
+      margin:18px 0 18px;
+    }
+
+    .input-card, .stats, .toolbar, .lesson, .modal-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .input-card{
+      padding:14px;
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-size:.78rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(2,8,18,.55);
+      color:var(--text);
+      border-radius:14px;
+      padding:12px 13px;
+      outline:none;
+      font:inherit;
+    }
+
+    textarea{min-height:86px; resize:vertical}
+    input:focus, textarea:focus, select:focus{border-color:rgba(240,74,19,.8)}
+
+    .dashboard{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .stats{
+      padding:16px;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:10px;
+    }
+
+    .stat{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:13px;
+      min-height:88px;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:1.55rem;
+      line-height:1;
+      margin-bottom:8px;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:.82rem;
+    }
+
+    .progress-wrap{
+      margin-top:14px;
+      height:12px;
+      background:rgba(255,255,255,.08);
+      border-radius:100px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--blue), var(--green), var(--orange));
+      border-radius:100px;
+      transition:.25s ease;
+    }
+
+    .toolbar{
+      padding:16px;
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr 1fr;
+      align-content:start;
+    }
+
+    .btn{
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg, var(--blue), #0a64d6);
+      box-shadow:0 10px 24px rgba(10,100,214,.22);
+      transition:.2s ease;
+      text-align:center;
+    }
+
+    .btn:hover{transform:translateY(-1px); filter:brightness(1.05)}
+    .btn.orange{background:linear-gradient(135deg, var(--orange), #ff7a35)}
+    .btn.green{background:linear-gradient(135deg, #0d8d59, var(--green)); color:#042014}
+    .btn.gray{background:rgba(255,255,255,.12); box-shadow:none; border:1px solid var(--line)}
+    .btn.danger{background:linear-gradient(135deg, #d7264d, var(--danger))}
+    .btn.full{grid-column:1/-1}
+    .btn.small{padding:9px 11px; font-size:.86rem}
+
+
+
+    .sheets-panel{
+      padding:16px;
+      margin:14px 0 18px;
+      background:linear-gradient(180deg, rgba(25,195,125,.10), rgba(255,255,255,.035));
+      border:1px solid rgba(25,195,125,.26);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .sheets-grid{
+      display:grid;
+      grid-template-columns: 1fr auto auto;
+      gap:10px;
+      align-items:end;
+    }
+
+    .sync-actions{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .status-msg{
+      grid-column:1/-1;
+      color:var(--muted);
+      font-size:.88rem;
+      min-height:1.2rem;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1fr 180px;
+      gap:12px;
+      margin:14px 0;
+    }
+
+    .lessons{
+      display:grid;
+      gap:14px;
+    }
+
+    .lesson{
+      overflow:hidden;
+    }
+
+    .lesson-head{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:center;
+      padding:18px;
+      cursor:pointer;
+      background:rgba(255,255,255,.035);
+    }
+
+    .lesson-number{
+      width:62px;
+      height:62px;
+      border-radius:20px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      font-size:1.35rem;
+      background:linear-gradient(135deg, var(--blue), var(--orange));
+      box-shadow:0 12px 30px rgba(0,0,0,.28);
+    }
+
+    .lesson h2{
+      margin:0;
+      font-size:1.13rem;
+      letter-spacing:-.01em;
+    }
+
+    .lesson-meta{
+      margin-top:7px;
+      color:var(--muted);
+      font-size:.9rem;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .pill{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.055);
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:.78rem;
+      color:var(--muted);
+    }
+
+    .lesson-progress{
+      width:120px;
+      text-align:right;
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:800;
+    }
+
+    .lesson-body{
+      display:none;
+      padding:0 18px 18px;
+      border-top:1px solid var(--line);
+    }
+
+    .lesson.open .lesson-body{display:block}
+
+    .section-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .section{
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .section h3{
+      margin:0 0 10px;
+      font-size:.95rem;
+      color:#fff;
+    }
+
+    .section ul{
+      margin:0;
+      padding-left:20px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .checklist{
+      margin-top:16px;
+      display:grid;
+      gap:8px;
+    }
+
+    .check-item{
+      display:grid;
+      grid-template-columns:26px 1fr auto;
+      align-items:center;
+      gap:10px;
+      padding:11px;
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.095);
+      border-radius:15px;
+    }
+
+    .check-item input{
+      width:20px;
+      height:20px;
+      accent-color:var(--green);
+    }
+
+    .check-item.done .check-text{
+      color:rgba(244,247,251,.62);
+      text-decoration:line-through;
+    }
+
+    .tag{
+      color:#06111e;
+      background:var(--yellow);
+      border-radius:999px;
+      padding:4px 8px;
+      font-size:.72rem;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .notes-area{
+      margin-top:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .print-header{display:none}
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      display:none;
+      place-items:center;
+      z-index:50;
+      padding:18px;
+    }
+
+    .modal.show{display:grid}
+    .modal-card{
+      width:min(760px, 96vw);
+      padding:18px;
+    }
+
+    .report{
+      background:rgba(0,0,0,.2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      max-height:55vh;
+      overflow:auto;
+      white-space:pre-wrap;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    footer{
+      margin-top:26px;
+      color:var(--muted);
+      text-align:center;
+      font-size:.9rem;
+    }
+
+    @media (max-width: 860px){
+      header{grid-template-columns:1fr}
+      .brand{align-items:flex-start; flex-direction:column}
+      .titlebox{border-left:0; border-top:3px solid var(--orange); padding:14px 0 0}
+      .teacher-panel,.dashboard,.section-grid,.filters,.sheets-grid{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:repeat(2, 1fr)}
+      .lesson-head{grid-template-columns:auto 1fr}
+      .lesson-progress{grid-column:1/-1; width:auto; text-align:left}
+    }
+
+    @media print{
+      body{background:#fff; color:#111}
+      .app{width:100%; padding:0}
+      header,.teacher-panel,.dashboard,.filters,.toolbar,.sheets-panel,footer,.btn{display:none!important}
+      .print-header{display:block; margin-bottom:18px}
+      .print-header h1{font-size:20px}
+      .lesson{
+        box-shadow:none;
+        border:1px solid #bbb;
+        break-inside:avoid;
+        background:#fff;
+        color:#111;
+        margin-bottom:10px;
+      }
+      .lesson-body{display:block!important}
+      .lesson-head{background:#fff; padding:12px}
+      .lesson-number{background:#ddd; color:#111; box-shadow:none}
+      .lesson h2,.section h3{color:#111}
+      .section,.check-item{background:#fff; color:#111; border-color:#ccc}
+      .section ul,.lesson-meta,.pill,.subtitle,.check-text{color:#333}
+      .tag{background:#eee; color:#111; border:1px solid #bbb}
+      textarea{border:1px solid #ccc; color:#111; background:#fff}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="print-header">
+      <h1>Checklist de Aulas Práticas — Sistemas Fotovoltaicos</h1>
+      <p>Registro de execução prática do professor em laboratório.</p>
+    </div>
+
+    <header>
+      <div class="brand">
+        <img src="assets/logo_senaihub.webp" alt="SENAI HUB Inovação e Tecnologia">
+        <div class="titlebox">
+          <h1>Checklist de Aulas Práticas Fotovoltaicas</h1>
+          <p class="subtitle">Controle didático para o professor registrar o que foi ensinado, demonstrado, executado e avaliado no laboratório.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="teacher-panel">
+      <div class="input-card">
+        <label for="professor">Professor</label>
+        <input id="professor" placeholder="Nome do professor">
+      </div>
+      <div class="input-card">
+        <label for="turma">Turma</label>
+        <input id="turma" placeholder="Ex.: FV 112h - Turma A">
+      </div>
+      <div class="input-card">
+        <label for="curso">Curso / Unidade Curricular</label>
+        <input id="curso" placeholder="Aplicações em Sistemas Fotovoltaicos 112 h">
+      </div>
+      <div class="input-card">
+        <label for="data">Data</label>
+        <input id="data" type="date">
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <div class="stats">
+        <div class="stats-grid">
+          <div class="stat"><strong id="totalLessons">15</strong><span>Aulas práticas</span></div>
+          <div class="stat"><strong id="totalItems">0</strong><span>Itens no checklist</span></div>
+          <div class="stat"><strong id="doneItems">0</strong><span>Itens concluídos</span></div>
+          <div class="stat"><strong id="percentDone">0%</strong><span>Progresso geral</span></div>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn green" onclick="expandAll()">Abrir todas</button>
+        <button class="btn gray" onclick="collapseAll()">Fechar todas</button>
+        <button class="btn orange" onclick="generateReport()">Gerar relatório</button>
+        <button class="btn" onclick="window.print()">Imprimir / salvar PDF</button>
+        <button class="btn gray" onclick="exportCSV()">Exportar CSV</button>
+        <button class="btn danger" onclick="resetAll()">Limpar checklist</button>
+      </div>
+    </section>
+
+
+
+    <section class="sheets-panel">
+      <label for="scriptUrl">Integração com Google Sheets — URL do Web App do Google Apps Script</label>
+      <div class="sheets-grid">
+        <input id="scriptUrl" placeholder="Cole aqui a URL do Web App do Google Apps Script">
+        <button class="btn green" onclick="saveScriptUrl()">Salvar URL</button>
+        <button class="btn gray" onclick="testSheetsConnection()">Testar envio</button>
+        <div class="status-msg" id="sheetsStatus">Ainda sem integração configurada.</div>
+      </div>
+      <div class="sync-actions">
+        <button class="btn orange" onclick="sendAllWithProgress()">Enviar aulas preenchidas ao Google Sheets</button>
+        <button class="btn gray" onclick="openSheetGuide()">Como publicar o Apps Script</button>
+      </div>
+    </section>
+
+    <section class="filters">
+      <input id="search" placeholder="Pesquisar aula, atividade, objetivo ou item do checklist...">
+      <select id="statusFilter">
+        <option value="all">Todas as aulas</option>
+        <option value="pending">Com pendências</option>
+        <option value="done">100% concluídas</option>
+      </select>
+    </section>
+
+    <main id="lessons" class="lessons"></main>
+
+    <footer>
+      SENAI HUB Inovação e Tecnologia | Checklist didático para aulas práticas em sistemas fotovoltaicos
+    </footer>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h2 style="margin-top:0">Relatório da aula prática</h2>
+      <div class="report" id="report"></div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap">
+        <button class="btn green" onclick="copyReport()">Copiar relatório</button>
+        <button class="btn gray" onclick="document.getElementById('modal').classList.remove('show')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const lessons = [
+  {
+    n:14,
+    title:"Segurança, APR, ordem de serviço e reconhecimento do sistema fotovoltaico",
+    objective:"Preparar o aluno para atuar no laboratório com segurança, interpretando a ordem de serviço, a APR e os componentes principais do sistema.",
+    professor:[
+      "Interpretação da ordem de serviço de instalação fotovoltaica.",
+      "Preenchimento da APR e identificação dos riscos da atividade.",
+      "Seleção de EPIs, EPCs, ferramentas e instrumentos.",
+      "Reconhecimento físico dos módulos, cabos, conectores, string box, inversor, quadro CA, aterramento e baterias."
+    ],
+    students:[
+      "Receber a ordem de serviço simulada.",
+      "Preencher a APR.",
+      "Inspecionar o local ou bancada de montagem.",
+      "Separar ferramentas, EPIs e materiais.",
+      "Identificar os componentes do sistema fotovoltaico."
+    ],
+    evidence:"APR preenchida, checklist de materiais e identificação correta dos componentes.",
+    checks:[
+      ["Segurança","Apresentou os riscos elétricos, mecânicos, ergonômicos e de trabalho em altura."],
+      ["Documento","Explicou a ordem de serviço e a APR."],
+      ["Prática","Orientou a separação de EPIs, ferramentas e instrumentos."],
+      ["Prática","Conduziu o reconhecimento dos componentes fotovoltaicos."],
+      ["Avaliação","Conferiu APR e checklist preenchidos pelos alunos."],
+      ["Fechamento","Organizou o laboratório e registrou pendências da aula."]
+    ]
+  },
+  {
+    n:15,
+    title:"Cabos solares, conectores MC4 e crimpagem",
+    objective:"Ensinar preparação de cabos solares, crimpagem e montagem de conectores MC4 com polaridade correta.",
+    professor:[
+      "Diferença entre cabo solar CC e cabo comum.",
+      "Identificação de polaridade positiva e negativa.",
+      "Uso correto do alicate de crimpagem MC4.",
+      "Teste de continuidade, travamento e tração leve do conector."
+    ],
+    students:[
+      "Cortar e decapar cabos solares.",
+      "Crimpar terminais metálicos MC4.",
+      "Montar conectores macho e fêmea.",
+      "Testar continuidade e polaridade.",
+      "Etiquetar positivo e negativo."
+    ],
+    evidence:"Cabos solares com MC4 instalados, testados e identificados.",
+    checks:[
+      ["Segurança","Orientou riscos de curto-circuito e polaridade no circuito CC."],
+      ["Demonstração","Demonstrou corte e decapagem do cabo solar."],
+      ["Demonstração","Demonstrou crimpagem correta do terminal MC4."],
+      ["Prática","Acompanhou a montagem dos conectores pelos alunos."],
+      ["Teste","Conferiu continuidade, polaridade e travamento mecânico."],
+      ["Correção","Mostrou exemplos de crimpagem incorreta e como corrigir."]
+    ]
+  },
+  {
+    n:16,
+    title:"Montagem da estrutura de fixação dos módulos",
+    objective:"Ensinar a montagem mecânica da estrutura fotovoltaica com alinhamento, fixação e torque.",
+    professor:[
+      "Tipos de estruturas: solo, telhado metálico, telhado cerâmico e bancada didática.",
+      "Função dos perfis, grampos finais, grampos intermediários e parafusos.",
+      "Conferência de alinhamento, esquadro e aperto.",
+      "Critérios de inspeção mecânica."
+    ],
+    students:[
+      "Separar perfis, parafusos e grampos.",
+      "Montar trilhos e suportes.",
+      "Conferir alinhamento.",
+      "Aplicar aperto conforme orientação.",
+      "Preencher checklist mecânico."
+    ],
+    evidence:"Estrutura montada, alinhada e inspecionada.",
+    checks:[
+      ["Segurança","Orientou manuseio de perfis, ferramentas e pontos de prensagem."],
+      ["Demonstração","Demonstrou montagem dos trilhos e suportes."],
+      ["Prática","Acompanhou montagem da estrutura pelas equipes."],
+      ["Qualidade","Conferiu alinhamento e firmeza da estrutura."],
+      ["Avaliação","Verificou aperto e posicionamento dos grampos."],
+      ["Registro","Solicitou checklist de inspeção mecânica."]
+    ]
+  },
+  {
+    n:17,
+    title:"Instalação física dos módulos fotovoltaicos",
+    objective:"Ensinar instalação dos módulos na estrutura, respeitando manuseio, fixação e organização dos cabos.",
+    professor:[
+      "Cuidados no transporte para evitar microfissuras.",
+      "Posicionamento correto do módulo na estrutura.",
+      "Uso dos grampos finais e intermediários.",
+      "Organização dos cabos traseiros e conectores."
+    ],
+    students:[
+      "Transportar o módulo com segurança.",
+      "Posicionar e alinhar o módulo.",
+      "Fixar com grampos adequados.",
+      "Organizar cabos e conectores.",
+      "Registrar a instalação."
+    ],
+    evidence:"Módulos instalados, fixados e com cabos organizados.",
+    checks:[
+      ["Segurança","Demonstrou técnica correta de transporte do módulo."],
+      ["Demonstração","Explicou pontos de apoio e fixação do módulo."],
+      ["Prática","Orientou posicionamento e alinhamento dos módulos."],
+      ["Prática","Acompanhou fixação com grampos finais e intermediários."],
+      ["Qualidade","Conferiu se cabos não ficaram tracionados ou soltos."],
+      ["Avaliação","Validou a instalação no checklist da aula."]
+    ]
+  },
+  {
+    n:18,
+    title:"Associação de módulos: série, paralelo e strings",
+    objective:"Ensinar a montagem elétrica CC dos módulos, formando strings com polaridade correta e medição segura.",
+    professor:[
+      "Diferença entre série, paralelo e string.",
+      "Leitura de Voc, Isc, Vmp e Imp na etiqueta do módulo.",
+      "Medição de tensão individual e tensão total da string.",
+      "Riscos de curto-circuito e polaridade invertida."
+    ],
+    students:[
+      "Ler dados elétricos do módulo.",
+      "Conectar módulos em série ou paralelo conforme roteiro.",
+      "Medir tensão individual.",
+      "Medir tensão total da string.",
+      "Etiquetar saída positiva e negativa."
+    ],
+    evidence:"String montada, medida e identificada.",
+    checks:[
+      ["Conceito","Explicou série, paralelo e comportamento de tensão/corrente."],
+      ["Demonstração","Demonstrou leitura da etiqueta elétrica do módulo."],
+      ["Prática","Acompanhou a conexão dos módulos em string."],
+      ["Medição","Conferiu tensão individual dos módulos."],
+      ["Medição","Conferiu tensão total e polaridade da string."],
+      ["Registro","Solicitou registro dos valores medidos."]
+    ]
+  },
+  {
+    n:19,
+    title:"Montagem e ligação da string box CC",
+    objective:"Ensinar a instalação da string box CC e seus dispositivos de proteção.",
+    professor:[
+      "Função da string box.",
+      "Identificação de chave seccionadora CC, DPS CC, fusíveis, bornes e aterramento.",
+      "Entrada da string e saída para inversor.",
+      "Organização e identificação de cabos internos."
+    ],
+    students:[
+      "Fixar a string box.",
+      "Identificar entrada e saída CC.",
+      "Conectar positivo, negativo e terra.",
+      "Medir tensão de entrada e saída.",
+      "Preencher checklist da string box."
+    ],
+    evidence:"String box instalada, conectada e testada.",
+    checks:[
+      ["Segurança","Orientou riscos do lado CC energizado."],
+      ["Demonstração","Apresentou os dispositivos internos da string box."],
+      ["Prática","Acompanhou conexão dos cabos positivos e negativos."],
+      ["Prática","Orientou conexão do condutor de proteção."],
+      ["Teste","Conferiu polaridade e tensão na entrada e saída."],
+      ["Qualidade","Verificou organização, aperto e identificação interna."]
+    ]
+  },
+  {
+    n:20,
+    title:"Instalação do inversor on-grid e quadro CA",
+    objective:"Ensinar instalação física e elétrica básica do inversor conectado à rede com proteção CA.",
+    professor:[
+      "Função do inversor on-grid.",
+      "Separação entre lado CC e lado CA.",
+      "Fixação do inversor e interpretação dos bornes.",
+      "Montagem do disjuntor CA, DPS CA, barramento de terra e neutro."
+    ],
+    students:[
+      "Fixar o inversor na bancada.",
+      "Conferir dados de placa.",
+      "Conectar entrada CC.",
+      "Montar saída CA com proteção.",
+      "Conectar aterramento e identificar circuitos."
+    ],
+    evidence:"Inversor instalado e quadro CA montado.",
+    checks:[
+      ["Segurança","Reforçou diferença entre circuito CC e CA."],
+      ["Demonstração","Explicou os bornes e dados de placa do inversor."],
+      ["Prática","Acompanhou instalação física do inversor."],
+      ["Prática","Orientou conexão CC e saída CA."],
+      ["Proteção","Conferiu disjuntor, DPS CA e aterramento."],
+      ["Qualidade","Verificou identificação, aperto e organização dos cabos."]
+    ]
+  },
+  {
+    n:21,
+    title:"Testes iniciais e partida do sistema on-grid em bancada",
+    objective:"Ensinar testes de pré-energização e sequência segura de partida do sistema on-grid.",
+    professor:[
+      "Procedimento antes da energização.",
+      "Medição de tensão CC e polaridade.",
+      "Medição da tensão CA da rede.",
+      "Sequência de partida e desligamento.",
+      "Interpretação de LEDs, display, aplicativo e alarmes."
+    ],
+    students:[
+      "Medir tensão da string.",
+      "Medir tensão CA da rede/bancada.",
+      "Energizar o lado CA.",
+      "Energizar o lado CC.",
+      "Registrar status do inversor.",
+      "Desligar seguindo procedimento."
+    ],
+    evidence:"Relatório de partida com medições e status do inversor.",
+    checks:[
+      ["Segurança","Conduziu verificação antes da energização."],
+      ["Medição","Orientou medição de tensão CC e polaridade."],
+      ["Medição","Orientou medição de tensão CA da rede."],
+      ["Partida","Executou sequência segura de energização."],
+      ["Diagnóstico","Explicou status, LEDs, display ou aplicativo."],
+      ["Registro","Solicitou relatório simples de partida e desligamento."]
+    ]
+  },
+  {
+    n:22,
+    title:"Sistema fotovoltaico off-grid: controlador, baterias e inversor isolado",
+    objective:"Ensinar montagem de sistema off-grid com controlador de carga, baterias, inversor isolado e cargas.",
+    professor:[
+      "Diferença entre on-grid e off-grid.",
+      "Função do controlador PWM ou MPPT.",
+      "Associação de baterias.",
+      "Sequência correta de ligação: bateria, controlador, módulos e cargas.",
+      "Cuidados com polaridade e curto-circuito."
+    ],
+    students:[
+      "Identificar tensão nominal do sistema.",
+      "Conectar bateria ao controlador.",
+      "Conectar módulos ao controlador.",
+      "Conectar inversor off-grid.",
+      "Alimentar carga didática e medir tensão."
+    ],
+    evidence:"Sistema off-grid funcionando com medições registradas.",
+    checks:[
+      ["Conceito","Explicou arquitetura do sistema off-grid."],
+      ["Segurança","Orientou riscos no banco de baterias."],
+      ["Demonstração","Demonstrou sequência correta de conexão."],
+      ["Prática","Acompanhou ligação do controlador, bateria e módulo."],
+      ["Teste","Conferiu tensão da bateria e saída do inversor."],
+      ["Avaliação","Verificou alimentação da carga e registro das medições."]
+    ]
+  },
+  {
+    n:23,
+    title:"Sistema fotovoltaico híbrido com baterias e cargas essenciais",
+    objective:"Ensinar operação básica de sistema híbrido com geração FV, rede, baterias e backup de cargas essenciais.",
+    professor:[
+      "Diferença entre inversor off-grid e híbrido.",
+      "Conceito de cargas normais e cargas essenciais.",
+      "Entrada FV, entrada rede, saída carga e banco de baterias.",
+      "Função backup e simulação de falta de rede.",
+      "Prioridade de energia e controle de exportação, quando disponível."
+    ],
+    students:[
+      "Identificar bornes do inversor híbrido.",
+      "Conectar entrada fotovoltaica.",
+      "Conectar banco de baterias.",
+      "Conectar entrada CA/rede.",
+      "Conectar saída para cargas essenciais.",
+      "Simular falta de rede e registrar comportamento."
+    ],
+    evidence:"Sistema híbrido com backup de cargas essenciais testado.",
+    checks:[
+      ["Conceito","Explicou arquitetura do sistema híbrido."],
+      ["Segurança","Orientou separação de cargas normais e essenciais."],
+      ["Prática","Acompanhou conexões FV, rede, bateria e saída de carga."],
+      ["Configuração","Demonstrou configuração básica de operação."],
+      ["Teste","Simulou falta de rede e verificou backup."],
+      ["Registro","Solicitou registro do comportamento do sistema."]
+    ]
+  },
+  {
+    n:24,
+    title:"Configuração de monitoramento, datalogger e aplicativo",
+    objective:"Ensinar configuração do monitoramento do inversor e interpretação dos dados de geração.",
+    professor:[
+      "Função do datalogger.",
+      "Configuração Wi-Fi ou rede local.",
+      "Cadastro básico do equipamento no aplicativo.",
+      "Leitura de potência, energia, tensão, corrente, status e alarmes.",
+      "Diferença entre falha de geração e falha de comunicação."
+    ],
+    students:[
+      "Conectar ou instalar datalogger.",
+      "Configurar rede Wi-Fi.",
+      "Acessar aplicativo ou plataforma.",
+      "Verificar dados em tempo real.",
+      "Simular perda de comunicação.",
+      "Registrar evidências."
+    ],
+    evidence:"Monitoramento configurado e dados visualizados.",
+    checks:[
+      ["Demonstração","Apresentou datalogger e aplicativo de monitoramento."],
+      ["Prática","Orientou configuração de rede ou Wi-Fi."],
+      ["Prática","Acompanhou cadastro do equipamento na plataforma."],
+      ["Leitura","Explicou dados de potência, energia, tensão e alarmes."],
+      ["Diagnóstico","Simulou ou explicou falha de comunicação."],
+      ["Registro","Solicitou evidência de tela ou relatório."]
+    ]
+  },
+  {
+    n:25,
+    title:"Comissionamento do sistema fotovoltaico",
+    objective:"Ensinar validação técnica do sistema instalado por inspeção, medições, testes e relatório.",
+    professor:[
+      "Diferença entre instalação concluída e comissionada.",
+      "Uso de checklist de comissionamento.",
+      "Ensaios de polaridade, tensão CC, tensão CA, aterramento, string box, inversor e baterias.",
+      "Registro de conformidades e não conformidades."
+    ],
+    students:[
+      "Preencher checklist de comissionamento.",
+      "Fazer inspeção visual completa.",
+      "Medir tensão CC e CA.",
+      "Testar continuidade do aterramento.",
+      "Verificar inversor e string box.",
+      "Emitir relatório simples."
+    ],
+    evidence:"Checklist e relatório de comissionamento.",
+    checks:[
+      ["Conceito","Explicou o objetivo do comissionamento."],
+      ["Documento","Apresentou checklist de comissionamento."],
+      ["Inspeção","Conduziu inspeção visual completa do sistema."],
+      ["Medição","Orientou medições CC, CA e continuidade."],
+      ["Teste","Verificou inversor, string box e baterias quando houver."],
+      ["Relatório","Solicitou relatório com conformidades e não conformidades."]
+    ]
+  },
+  {
+    n:26,
+    title:"Manutenção preventiva e preditiva",
+    objective:"Ensinar inspeção, limpeza, reaperto, análise térmica e plano de manutenção.",
+    professor:[
+      "Procedimento de desenergização.",
+      "Inspeção visual de módulos, estruturas, conexões e string box.",
+      "Limpeza correta dos módulos.",
+      "Uso de termovisor, quando disponível.",
+      "Elaboração de plano de manutenção."
+    ],
+    students:[
+      "Desenergizar o sistema com orientação.",
+      "Inspecionar módulos e estrutura.",
+      "Verificar conectores e quadros.",
+      "Executar limpeza simulada ou real.",
+      "Registrar relatório de manutenção preventiva."
+    ],
+    evidence:"Checklist de manutenção e plano simples de manutenção.",
+    checks:[
+      ["Segurança","Demonstrou procedimento de desenergização."],
+      ["Inspeção","Orientou inspeção visual dos módulos."],
+      ["Inspeção","Conferiu estrutura, conexões e string box."],
+      ["Manutenção","Demonstrou limpeza correta dos módulos."],
+      ["Preditiva","Apresentou análise térmica ou pontos quentes."],
+      ["Registro","Solicitou checklist e plano de manutenção."]
+    ]
+  },
+  {
+    n:27,
+    title:"Diagnóstico de falhas e manutenção corretiva",
+    objective:"Ensinar localização de falhas, correção planejada e registro técnico.",
+    professor:[
+      "Sintomas comuns: inversor não liga, baixa geração, polaridade invertida, fusível aberto e falha de comunicação.",
+      "Uso do multímetro no diagnóstico.",
+      "Substituição de conectores, fusíveis e dispositivos.",
+      "Registro de manutenção corretiva."
+    ],
+    students:[
+      "Investigar falhas simuladas.",
+      "Medir tensão e continuidade.",
+      "Identificar causa provável.",
+      "Corrigir falha autorizada.",
+      "Registrar diagnóstico e solução."
+    ],
+    evidence:"Relatório de diagnóstico e falha corrigida.",
+    checks:[
+      ["Demonstração","Apresentou sintomas de falhas comuns."],
+      ["Diagnóstico","Criou ou explicou falhas simuladas na bancada."],
+      ["Medição","Acompanhou uso do multímetro no diagnóstico."],
+      ["Correção","Orientou substituição ou correção do componente."],
+      ["Teste","Conferiu funcionamento após a correção."],
+      ["Relatório","Solicitou registro da causa, correção e resultado."]
+    ]
+  },
+  {
+    n:28,
+    title:"Projeto prático final: montagem, testes e entrega técnica",
+    objective:"Integrar todas as etapas: segurança, montagem, conexão, monitoramento, comissionamento, manutenção e entrega técnica.",
+    professor:[
+      "Organização da instalação do início ao fim.",
+      "Divisão de papéis da equipe.",
+      "Controle de qualidade da montagem.",
+      "Validação por medições e comissionamento.",
+      "Entrega técnica e apresentação oral."
+    ],
+    students:[
+      "Ler ordem de serviço e preencher APR.",
+      "Montar estrutura e módulo.",
+      "Montar cabos, MC4, string box, inversor e proteções.",
+      "Configurar monitoramento.",
+      "Realizar testes e comissionamento.",
+      "Entregar relatório técnico final."
+    ],
+    evidence:"Sistema completo montado, testado e apresentado pela equipe.",
+    checks:[
+      ["Planejamento","Organizou equipes, funções e ordem de serviço."],
+      ["Segurança","Conferiu APR, EPIs e condições do laboratório."],
+      ["Montagem","Acompanhou montagem mecânica e elétrica completa."],
+      ["Teste","Conferiu medições e funcionamento do sistema."],
+      ["Comissionamento","Validou checklist final de comissionamento."],
+      ["Entrega","Conduziu apresentação e entrega técnica final."]
+    ]
+  }
+];
+
+const stateKey = "senaihub_fv_checklist_v1";
+
+function getState(){
+  try { return JSON.parse(localStorage.getItem(stateKey)) || {}; }
+  catch(e){ return {}; }
+}
+
+function setState(state){
+  localStorage.setItem(stateKey, JSON.stringify(state));
+}
+
+function saveField(id){
+  const state = getState();
+  state.fields = state.fields || {};
+  state.fields[id] = document.getElementById(id).value;
+  setState(state);
+}
+
+function render(){
+  const state = getState();
+  const container = document.getElementById("lessons");
+  const search = (document.getElementById("search").value || "").toLowerCase();
+  const filter = document.getElementById("statusFilter").value;
+
+  container.innerHTML = "";
+
+  lessons.forEach(lesson => {
+    const lessonState = state["lesson_" + lesson.n] || {};
+    const checks = lesson.checks || [];
+    const doneCount = checks.filter((_,i)=>lessonState["check_"+i]).length;
+    const percent = checks.length ? Math.round(doneCount / checks.length * 100) : 0;
+
+    const contentText = [
+      lesson.title,
+      lesson.objective,
+      lesson.professor.join(" "),
+      lesson.students.join(" "),
+      lesson.evidence,
+      checks.map(c=>c.join(" ")).join(" ")
+    ].join(" ").toLowerCase();
+
+    if(search && !contentText.includes(search)) return;
+    if(filter === "done" && percent < 100) return;
+    if(filter === "pending" && percent === 100) return;
+
+    const el = document.createElement("article");
+    el.className = "lesson";
+    el.dataset.lesson = lesson.n;
+
+    el.innerHTML = `
+      <div class="lesson-head" onclick="toggleLesson(${lesson.n})">
+        <div class="lesson-number">${lesson.n}ª</div>
+        <div>
+          <h2>${lesson.title}</h2>
+          <div class="lesson-meta">
+            <span class="pill">4 horas</span>
+            <span class="pill">${doneCount}/${checks.length} itens concluídos</span>
+            <span class="pill">Evidência: ${lesson.evidence}</span>
+          </div>
+        </div>
+        <div class="lesson-progress">${percent}% concluído</div>
+      </div>
+      <div class="lesson-body">
+        <div class="section-grid">
+          <div class="section">
+            <h3>Objetivo da aula</h3>
+            <ul><li>${lesson.objective}</li></ul>
+          </div>
+          <div class="section">
+            <h3>Evidência esperada</h3>
+            <ul><li>${lesson.evidence}</li></ul>
+          </div>
+          <div class="section">
+            <h3>O professor vai ensinar na prática</h3>
+            <ul>${lesson.professor.map(item=>`<li>${item}</li>`).join("")}</ul>
+          </div>
+          <div class="section">
+            <h3>Os alunos vão executar</h3>
+            <ul>${lesson.students.map(item=>`<li>${item}</li>`).join("")}</ul>
+          </div>
+        </div>
+
+        <div class="checklist">
+          ${checks.map((item,i)=>`
+            <label class="check-item ${lessonState["check_"+i] ? "done" : ""}">
+              <input type="checkbox" ${lessonState["check_"+i] ? "checked" : ""} onchange="toggleCheck(${lesson.n}, ${i}, this.checked)">
+              <span class="check-text">${item[1]}</span>
+              <span class="tag">${item[0]}</span>
+            </label>
+          `).join("")}
+        </div>
+
+        <div class="notes-area">
+          <label for="notes_${lesson.n}">Observações do professor</label>
+          <textarea id="notes_${lesson.n}" placeholder="Registre pendências, alunos que precisam de reforço, falhas encontradas ou evidências da aula..." oninput="saveNotes(${lesson.n})">${lessonState.notes || ""}</textarea>
+        </div>
+
+        <div class="sync-actions">
+          <button class="btn green small" onclick="event.stopPropagation(); sendLessonToSheets(${lesson.n})">Salvar esta aula no Google Sheets</button>
+          <button class="btn gray small" onclick="event.stopPropagation(); generateReport()">Gerar relatório parcial</button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(el);
+  });
+
+  updateStats();
+}
+
+function toggleLesson(n){
+  const el = document.querySelector(`.lesson[data-lesson="${n}"]`);
+  if(el) el.classList.toggle("open");
+}
+
+function expandAll(){
+  document.querySelectorAll(".lesson").forEach(el=>el.classList.add("open"));
+}
+
+function collapseAll(){
+  document.querySelectorAll(".lesson").forEach(el=>el.classList.remove("open"));
+}
+
+function toggleCheck(n, i, checked){
+  const state = getState();
+  const key = "lesson_" + n;
+  state[key] = state[key] || {};
+  state[key]["check_" + i] = checked;
+  setState(state);
+  render();
+  document.querySelector(`.lesson[data-lesson="${n}"]`)?.classList.add("open");
+}
+
+function saveNotes(n){
+  const state = getState();
+  const key = "lesson_" + n;
+  state[key] = state[key] || {};
+  state[key].notes = document.getElementById("notes_" + n).value;
+  setState(state);
+}
+
+function updateStats(){
+  const state = getState();
+  let total = 0, done = 0;
+  lessons.forEach(lesson=>{
+    total += lesson.checks.length;
+    const lessonState = state["lesson_" + lesson.n] || {};
+    lesson.checks.forEach((_,i)=>{
+      if(lessonState["check_"+i]) done++;
+    });
+  });
+  const percent = total ? Math.round(done / total * 100) : 0;
+  document.getElementById("totalLessons").textContent = lessons.length;
+  document.getElementById("totalItems").textContent = total;
+  document.getElementById("doneItems").textContent = done;
+  document.getElementById("percentDone").textContent = percent + "%";
+  document.getElementById("progressBar").style.width = percent + "%";
+}
+
+function resetAll(){
+  if(confirm("Deseja limpar todo o checklist e observações salvas?")){
+    localStorage.removeItem(stateKey);
+    ["professor","turma","curso","data","scriptUrl"].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+    render();
+  }
+}
+
+function generateReport(){
+  const state = getState();
+  const fields = state.fields || {};
+  let text = "";
+  text += "RELATÓRIO DE AULAS PRÁTICAS - SISTEMAS FOTOVOLTAICOS\n";
+  text += "Professor: " + (fields.professor || "Não informado") + "\n";
+  text += "Turma: " + (fields.turma || "Não informado") + "\n";
+  text += "Curso/UC: " + (fields.curso || "Não informado") + "\n";
+  text += "Data: " + (fields.data || "Não informada") + "\n\n";
+
+  let total = 0, done = 0;
+  lessons.forEach(lesson=>{
+    const lessonState = state["lesson_" + lesson.n] || {};
+    const doneCount = lesson.checks.filter((_,i)=>lessonState["check_"+i]).length;
+    total += lesson.checks.length;
+    done += doneCount;
+
+    text += `${lesson.n}ª AULA - ${lesson.title}\n`;
+    text += `Objetivo: ${lesson.objective}\n`;
+    text += `Execução: ${doneCount}/${lesson.checks.length} itens concluídos\n`;
+    text += `Evidência: ${lesson.evidence}\n`;
+    text += "Itens realizados:\n";
+    lesson.checks.forEach((item,i)=>{
+      text += `  ${lessonState["check_"+i] ? "[x]" : "[ ]"} ${item[1]} (${item[0]})\n`;
+    });
+    if(lessonState.notes){
+      text += "Observações: " + lessonState.notes + "\n";
+    }
+    text += "\n";
+  });
+
+  const percent = total ? Math.round(done / total * 100) : 0;
+  text += `PROGRESSO GERAL: ${done}/${total} itens concluídos (${percent}%).\n`;
+
+  document.getElementById("report").textContent = text;
+  document.getElementById("modal").classList.add("show");
+}
+
+function copyReport(){
+  navigator.clipboard.writeText(document.getElementById("report").textContent);
+  alert("Relatório copiado.");
+}
+
+function exportCSV(){
+  const state = getState();
+  const fields = state.fields || {};
+  const rows = [
+    ["Professor","Turma","Data","Aula","Tema","Categoria","Item","Concluido","Observacoes"]
+  ];
+  lessons.forEach(lesson=>{
+    const lessonState = state["lesson_" + lesson.n] || {};
+    lesson.checks.forEach((item,i)=>{
+      rows.push([
+        fields.professor || "",
+        fields.turma || "",
+        fields.data || "",
+        lesson.n + "ª",
+        lesson.title,
+        item[0],
+        item[1],
+        lessonState["check_"+i] ? "Sim" : "Não",
+        lessonState.notes || ""
+      ]);
+    });
+  });
+  const csv = rows.map(row=>row.map(cell=>`"${String(cell).replaceAll('"','""')}"`).join(";")).join("\n");
+  const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "checklist_aulas_fotovoltaicas_senaihub.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+["professor","turma","curso","data","scriptUrl"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", ()=>saveField(id));
+});
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("statusFilter").addEventListener("change", render);
+
+
+
+function updateSheetsStatus(message){
+  const state = getState();
+  const url = state.fields?.scriptUrl || document.getElementById("scriptUrl")?.value || "";
+  const el = document.getElementById("sheetsStatus");
+  if(!el) return;
+  if(message){ el.textContent = message; return; }
+  el.textContent = url ? "Integração configurada. Os registros serão enviados para o Google Sheets informado." : "Cole a URL do Web App para ativar o envio ao Google Sheets.";
+}
+
+function saveScriptUrl(){
+  saveField("scriptUrl");
+  updateSheetsStatus("URL salva. Agora você pode testar o envio ou salvar as aulas no Google Sheets.");
+}
+
+function openSheetGuide(){
+  alert("Passos resumidos:\n\n1. Crie uma planilha no Google Sheets.\n2. Vá em Extensões > Apps Script.\n3. Cole o arquivo Code.gs que está no pacote.\n4. Execute setupPlanilha uma vez.\n5. Clique em Implantar > Nova implantação > Aplicativo da Web.\n6. Execute como: você. Acesso: qualquer pessoa com o link ou usuários da organização.\n7. Copie a URL do Web App e cole neste campo.");
+}
+
+function getScriptUrl(){
+  const state = getState();
+  return state.fields?.scriptUrl || document.getElementById("scriptUrl")?.value || "";
+}
+
+function buildLessonPayload(n){
+  saveNotes(n);
+  const state = getState();
+  const fields = state.fields || {};
+  const lesson = lessons.find(item => item.n === n);
+  const lessonState = state["lesson_" + n] || {};
+  const checks = lesson.checks || [];
+  const marked = checks.map((item, i) => ({
+    categoria:item[0],
+    item:item[1],
+    concluido: !!lessonState["check_" + i]
+  }));
+  const doneCount = marked.filter(item => item.concluido).length;
+  const percent = checks.length ? Math.round(doneCount / checks.length * 100) : 0;
+  const status = percent === 100 ? "Concluída" : percent > 0 ? "Em andamento" : "Pendente";
+  const dataAula = fields.data || document.getElementById("data").value || new Date().toISOString().slice(0,10);
+  const professor = fields.professor || document.getElementById("professor").value || "Não informado";
+  const turma = fields.turma || document.getElementById("turma").value || "Não informada";
+  const curso = fields.curso || document.getElementById("curso").value || "Aplicações em Sistemas Fotovoltaicos 112 h";
+  const chaveRegistro = `${professor}__${turma}__${dataAula}__Aula_${n}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]/g,"_");
+
+  return {
+    tipo:"registro_pratica",
+    chaveRegistro,
+    id:`${Date.now()}_${n}_${Math.random().toString(36).slice(2,8)}`,
+    enviadoEm:new Date().toISOString(),
+    dataAula,
+    professor,
+    turma,
+    curso,
+    aulaNumero:n,
+    tema:lesson.title,
+    objetivo:lesson.objective,
+    totalItens:checks.length,
+    itensConcluidos:doneCount,
+    progresso:percent,
+    status,
+    checklist:marked,
+    itensMarcadosTexto: marked.filter(item => item.concluido).map(item => item.item).join(" | "),
+    observacoes:lessonState.notes || "",
+    versaoApp:"SENAIHUB-FV-GS-v1",
+    origem:"HTML/PWA"
+  };
+}
+
+async function postToSheets(payload){
+  const url = getScriptUrl();
+  if(!url){
+    alert("Cole primeiro a URL do Web App do Google Apps Script.");
+    return false;
+  }
+
+  try{
+    await fetch(url, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+    updateSheetsStatus("Envio realizado. Confira a aba Registros_Praticas na planilha.");
+    return true;
+  }catch(error){
+    updateSheetsStatus("Falha ao enviar. Confira a URL do Web App e a publicação do Apps Script.");
+    alert("Falha ao enviar para o Google Sheets. Confira a URL do Web App e as permissões do Apps Script.");
+    return false;
+  }
+}
+
+async function sendLessonToSheets(n){
+  const payload = buildLessonPayload(n);
+  const ok = await postToSheets(payload);
+  if(ok){
+    alert(`${payload.aulaNumero}ª aula enviada para o Google Sheets. Status: ${payload.status} (${payload.progresso}%).`);
+  }
+}
+
+async function sendAllWithProgress(){
+  const state = getState();
+  const selected = lessons.filter(lesson => {
+    const lessonState = state["lesson_" + lesson.n] || {};
+    return lesson.checks.some((_,i) => lessonState["check_" + i]) || (lessonState.notes || "").trim();
+  });
+  if(!selected.length){
+    alert("Nenhuma aula preenchida para enviar.");
+    return;
+  }
+  if(!confirm(`Enviar ${selected.length} aula(s) preenchida(s) para o Google Sheets?`)) return;
+  for(const lesson of selected){
+    await postToSheets(buildLessonPayload(lesson.n));
+    await new Promise(resolve => setTimeout(resolve, 280));
+  }
+  alert("Aulas preenchidas enviadas. Confira a planilha.");
+}
+
+async function testSheetsConnection(){
+  saveScriptUrl();
+  const payload = {
+    tipo:"teste",
+    enviadoEm:new Date().toISOString(),
+    mensagem:"Teste de envio do aplicativo Checklist FV SENAI HUB",
+    professor:document.getElementById("professor").value || "Teste",
+    turma:document.getElementById("turma").value || "Teste",
+    curso:document.getElementById("curso").value || "Teste"
+  };
+  const ok = await postToSheets(payload);
+  if(ok) alert("Teste enviado. Confira a aba Logs na planilha.");
+}
+
+(function init(){
+  const state = getState();
+  const fields = state.fields || {};
+  ["professor","turma","curso","data","scriptUrl"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = fields[id] || "";
+  });
+  if(!document.getElementById("curso").value){
+    document.getElementById("curso").value = "Aplicações em Sistemas Fotovoltaicos 112 h";
+    saveField("curso");
+  }
+  if(!document.getElementById("data").value){
+    document.getElementById("data").valueAsDate = new Date();
+    saveField("data");
+  }
+  updateSheetsStatus();
+  render();
+})();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
